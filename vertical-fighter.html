@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Dikey Dövüş Oyunu</title>
+    <style>
+      :root {
+        --bg-1: #070b17;
+        --bg-2: #111827;
+        --panel: rgba(15, 23, 42, 0.8);
+        --panel-alt: rgba(17, 24, 39, 0.9);
+        --primary: #f97316;
+        --primary-2: #fb7185;
+        --secondary: #2dd4bf;
+        --gold: #facc15;
+        --danger: #ef4444;
+        --health: #22c55e;
+        --health-low: #f59e0b;
+        --text: #e5eefb;
+        --muted: #9fb3d9;
+        --shadow: rgba(0, 0, 0, 0.45);
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        font-family: Arial, Helvetica, sans-serif;
+        background: radial-gradient(circle at top, #16213a 0%, var(--bg-1) 45%, #050814 100%);
+        color: var(--text);
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .game-shell {
+        position: relative;
+        width: min(100%, 430px);
+        height: min(92vh, 860px);
+        border-radius: 28px;
+        overflow: hidden;
+        background: linear-gradient(180deg, #131d31 0%, #0b1120 100%);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+      }
+
+      .game-shell::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(to bottom, rgba(255,255,255,0.06), transparent 18%),
+          linear-gradient(180deg, rgba(34,197,94,0.05), rgba(249,115,22,0.06));
+        pointer-events: none;
+      }
+
+      .topbar {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px 10px;
+      }
+
+      .round-badge {
+        background: rgba(12, 18, 30, 0.72);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        border-radius: 999px;
+        padding: 7px 14px;
+        font-size: 12px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--gold);
+      }
+
+      .timer {
+        font-weight: 700;
+        font-size: 15px;
+        background: rgba(17, 24, 39, 0.8);
+        border-radius: 10px;
+        padding: 8px 12px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+      }
+
+      .fighter-hud {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 0 16px 10px;
+      }
+
+      .fighter-panel {
+        background: rgba(15, 23, 42, 0.72);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 14px;
+        padding: 10px 12px;
+      }
+
+      .fighter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--muted);
+      }
+
+      .name {
+        font-weight: 700;
+        color: var(--text);
+        font-size: 13px;
+      }
+
+      .health-bar {
+        position: relative;
+        height: 16px;
+        width: 100%;
+        border-radius: 999px;
+        overflow: hidden;
+        background: rgba(148, 163, 184, 0.18);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+      }
+
+      .health-fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #22c55e 0%, #84cc16 100%);
+        transition: width 0.25s ease;
+      }
+
+      .health-fill.enemy {
+        background: linear-gradient(90deg, #f97316 0%, #f43f5e 100%);
+      }
+
+      .arena {
+        position: relative;
+        z-index: 1;
+        height: 470px;
+        margin: 8px 12px 0;
+        border-radius: 24px;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(16, 78, 107, 0.7), rgba(17, 24, 39, 0.96) 50%, rgba(9, 12, 18, 1));
+        border: 1px solid rgba(148, 163, 184, 0.15);
+      }
+
+      .arena::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(to bottom, rgba(250,204,21,0.04), rgba(0,0,0,0) 30%),
+          linear-gradient(to right, rgba(255,255,255,0.02), rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      }
+
+      .sun {
+        position: absolute;
+        top: 28px;
+        right: 50px;
+        width: 62px;
+        height: 62px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #fde68a 0%, #fbbf24 42%, rgba(251,191,36,0.15) 100%);
+        box-shadow: 0 0 28px rgba(251,191,36,0.4);
+      }
+
+      .city {
+        position: absolute;
+        inset: auto 0 0 0;
+        height: 150px;
+        background: linear-gradient(180deg, rgba(30,41,59,0.2), rgba(15,23,42,0.8));
+      }
+
+      .building {
+        position: absolute;
+        bottom: 0;
+        width: 22%;
+        background: linear-gradient(180deg, rgba(148,163,184,0.2), rgba(15,23,42,0.9));
+        border-top: 2px solid rgba(148,163,184,0.08);
+      }
+
+      .fighter {
+        position: absolute;
+        bottom: 86px;
+        width: 90px;
+        height: 180px;
+        transition: transform 0.18s ease, filter 0.2s ease;
+      }
+
+      .fighter .body {
+        position: absolute;
+        bottom: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 38px;
+        height: 80px;
+        border-radius: 16px 16px 10px 10px;
+        background: var(--fighter-color, #22d3ee);
+        box-shadow: inset 0 -8px rgba(0,0,0,0.12);
+      }
+
+      .fighter .head {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 18px;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: #f7d4bb;
+        border: 3px solid rgba(0,0,0,0.08);
+      }
+
+      .fighter .head::before {
+        content: "";
+        position: absolute;
+        left: 10px;
+        top: 15px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #2b2b2b;
+        box-shadow: 12px 0 0 #2b2b2b;
+      }
+
+      .fighter .arm {
+        position: absolute;
+        width: 12px;
+        height: 62px;
+        background: #f7d4bb;
+        border-radius: 12px;
+        top: 52px;
+      }
+
+      .fighter .arm.left {
+        left: 14px;
+        transform: rotate(28deg);
+      }
+
+      .fighter .arm.right {
+        right: 14px;
+        transform: rotate(-28deg);
+      }
+
+      .fighter .leg {
+        position: absolute;
+        width: 14px;
+        height: 62px;
+        background: rgba(17, 24, 39, 0.9);
+        border-radius: 12px;
+        bottom: 0;
+      }
+
+      .fighter .leg.left { left: 30px; }
+      .fighter .leg.right { right: 30px; }
+
+      .fighter.player-1 {
+        left: 52px;
+        --fighter-color: #38bdf8;
+      }
+
+      .fighter.player-2 {
+        right: 52px;
+        --fighter-color: #f87171;
+      }
+
+      .fighter.player-1 .body { background: linear-gradient(180deg, #38bdf8 0%, #2563eb 100%); }
+      .fighter.player-2 .body { background: linear-gradient(180deg, #fb7185 0%, #ef4444 100%); }
+
+      .fighter.attacking {
+        transform: translateY(-10px) scale(1.04);
+        filter: drop-shadow(0 0 14px rgba(250, 204, 21, 0.7));
+      }
+
+      .fighter.player-1.attacking { transform: translateX(18px) translateY(-12px) scale(1.05); }
+      .fighter.player-2.attacking { transform: translateX(-18px) translateY(-12px) scale(1.05); }
+
+      .effect {
+        position: absolute;
+        bottom: 170px;
+        width: 90px;
+        height: 90px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.15s ease;
+      }
+
+      .effect.show {
+        opacity: 1;
+      }
+
+      .effect.punch {
+        background: radial-gradient(circle, rgba(250,204,21,0.95) 0%, rgba(250,204,21,0.38) 22%, transparent 66%);
+        border-radius: 50%;
+      }
+
+      .effect.kick {
+        background: linear-gradient(135deg, rgba(248,113,113,0.85), rgba(251,191,36,0.2), transparent 70%);
+        clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      }
+
+      .effect.special {
+        background: radial-gradient(circle, rgba(45,212,191,0.95) 0%, rgba(45,212,191,0.3) 30%, transparent 65%);
+        border-radius: 50%;
+        box-shadow: 0 0 18px rgba(45,212,191,0.5);
+      }
+
+      .combo-panel {
+        position: absolute;
+        top: 180px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 5;
+        background: rgba(17, 24, 39, 0.78);
+        border: 1px solid rgba(250,204,21,0.45);
+        border-radius: 12px;
+        padding: 7px 12px;
+        font-weight: 700;
+        color: var(--gold);
+        letter-spacing: 1px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+
+      .combo-panel.show { opacity: 1; }
+
+      .controls {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        padding: 12px 16px 18px;
+      }
+
+      .action-btn {
+        border: none;
+        border-radius: 16px;
+        font-weight: 800;
+        font-size: 15px;
+        color: white;
+        padding: 14px 10px;
+        cursor: pointer;
+        transition: transform 0.15s ease, filter 0.15s ease;
+        box-shadow: 0 14px 18px rgba(0,0,0,0.2);
+      }
+
+      .action-btn:active {
+        transform: translateY(2px) scale(0.98);
+      }
+
+      .action-btn.primary { background: linear-gradient(180deg, #f97316, #ea580c); }
+      .action-btn.secondary { background: linear-gradient(180deg, #38bdf8, #0ea5e9); }
+      .action-btn.special { background: linear-gradient(180deg, #a78bfa, #7c3aed); }
+      .action-btn.defend { background: linear-gradient(180deg, #22c55e, #16a34a); }
+
+      .footer-tag {
+        display: flex;
+        justify-content: center;
+        padding: 0 16px 18px;
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+      }
+
+      @media (max-width: 480px) {
+        body { padding: 10px; }
+        .game-shell { height: 100vh; border-radius: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="game-shell">
+      <div class="topbar">
+        <div class="round-badge">Round 1</div>
+        <div class="timer" id="timer">60</div>
+      </div>
+
+      <div class="fighter-hud">
+        <div class="fighter-panel">
+          <div class="fighter-header">
+            <span class="name">Ares</span>
+            <span id="p1-score">100</span>
+          </div>
+          <div class="health-bar">
+            <div id="p1-health" class="health-fill"></div>
+          </div>
+        </div>
+
+        <div class="fighter-panel">
+          <div class="fighter-header">
+            <span class="name">Vex</span>
+            <span id="p2-score">100</span>
+          </div>
+          <div class="health-bar">
+            <div id="p2-health" class="health-fill enemy"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arena" aria-label="Dövüş sahası">
+        <div class="sun"></div>
+
+        <div id="combo-panel" class="combo-panel">COMBO!</div>
+
+        <div id="player-one" class="fighter player-1">
+          <div class="head"></div>
+          <div class="arm left"></div>
+          <div class="arm right"></div>
+          <div class="body"></div>
+          <div class="leg left"></div>
+          <div class="leg right"></div>
+        </div>
+
+        <div id="player-two" class="fighter player-2">
+          <div class="head"></div>
+          <div class="arm left"></div>
+          <div class="arm right"></div>
+          <div class="body"></div>
+          <div class="leg left"></div>
+          <div class="leg right"></div>
+        </div>
+
+        <div id="player-one-effect" class="effect"></div>
+        <div id="player-two-effect" class="effect"></div>
+
+        <div class="city">
+          <div class="building" style="left:4%; height:55%"></div>
+          <div class="building" style="left:18%; height:70%"></div>
+          <div class="building" style="left:34%; height:62%"></div>
+          <div class="building" style="left:56%; height:82%"></div>
+          <div class="building" style="left:73%; height:68%"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="action-btn primary" data-move="punch" type="button">Darbe</button>
+        <button class="action-btn secondary" data-move="kick" type="button">Tekme</button>
+        <button class="action-btn special" data-move="special" type="button">Özel</button>
+        <button class="action-btn defend" data-move="defend" type="button">Blok</button>
+      </div>
+
+      <div class="footer-tag">Portrait Combat Prototype</div>
+    </div>
+
+    <script>
+      const p1HealthEl = document.getElementById('p1-health');
+      const p2HealthEl = document.getElementById('p2-health');
+      const p1ScoreEl = document.getElementById('p1-score');
+      const p2ScoreEl = document.getElementById('p2-score');
+      const timerEl = document.getElementById('timer');
+      const comboPanel = document.getElementById('combo-panel');
+      const p1 = document.getElementById('player-one');
+      const p2 = document.getElementById('player-two');
+      const p1Effect = document.getElementById('player-one-effect');
+      const p2Effect = document.getElementById('player-two-effect');
+
+      let p1Health = 100;
+      let p2Health = 100;
+      let roundTime = 60;
+      let comboCount = 0;
+      let roundActive = true;
+
+      function setHealth(player, value) {
+        const clamped = Math.max(0, Math.min(100, value));
+        if (player === 'p1') {
+          p1Health = clamped;
+          p1HealthEl.style.width = clamped + '%';
+          p1ScoreEl.textContent = clamped;
+        } else {
+          p2Health = clamped;
+          p2HealthEl.style.width = clamped + '%';
+          p2ScoreEl.textContent = clamped;
+        }
+      }
+
+      function triggerMove(move, actor) {
+        if (!roundActive) return;
+
+        const attacker = actor === 'p1' ? p1 : p2;
+        const defender = actor === 'p1' ? p2 : p1;
+        const effect = actor === 'p1' ? p1Effect : p2Effect;
+
+        attacker.classList.remove('attacking');
+        void attacker.offsetWidth;
+        attacker.classList.add('attacking');
+
+        effect.className = 'effect show ' + move;
+
+        const attackMap = {
+          punch: { dmg: 10, text: 'PUNCH' },
+          kick: { dmg: 14, text: 'KICK' },
+          special: { dmg: 22, text: 'SPECIAL' },
+          defend: { dmg: 0, text: 'BLOCK' }
+        };
+
+        const moveInfo = attackMap[move] || attackMap.punch;
+
+        if (move === 'defend') {
+          comboPanel.textContent = 'BLOCK';
+          comboPanel.classList.add('show');
+          setTimeout(() => comboPanel.classList.remove('show'), 260);
+          return;
+        }
+
+        comboCount += 1;
+        const target = actor === 'p1' ? 'p2' : 'p1';
+        const baseDamage = moveInfo.dmg + (comboCount > 2 ? 4 : 0);
+        const isCounter = Math.random() < 0.18;
+
+        if (target === 'p1' && !isCounter) {
+          setHealth('p1', p1Health - baseDamage);
+        }
+
+        if (target === 'p2' && !isCounter) {
+          setHealth('p2', p2Health - baseDamage);
+        }
+
+        comboPanel.textContent = moveInfo.text + ' x' + comboCount;
+        comboPanel.classList.add('show');
+        setTimeout(() => comboPanel.classList.remove('show'), 350);
+
+        if (isCounter) {
+          attacker.classList.add('attacking');
+          const counterDamage = 8;
+          if (actor === 'p1') setHealth('p1', p1Health - counterDamage);
+          else setHealth('p2', p2Health - counterDamage);
+        }
+
+        setTimeout(() => {
+          attacker.classList.remove('attacking');
+          effect.classList.remove('show');
+        }, 200);
+
+        if (p1Health <= 0 || p2Health <= 0) {
+          roundActive = false;
+          const winner = p1Health > p2Health ? 'Ares kazandı!' : 'Vex kazandı!';
+          comboPanel.textContent = winner;
+          comboPanel.classList.add('show');
+        }
+      }
+
+      document.querySelectorAll('.action-btn').forEach((button) => {
+        button.addEventListener('click', () => {
+          const move = button.dataset.move;
+          const actor = Math.random() > 0.5 ? 'p1' : 'p2';
+          triggerMove(move, actor);
+
+          setTimeout(() => {
+            const enemyMoves = ['punch', 'kick', 'special', 'defend'];
+            const enemyMove = enemyMoves[Math.floor(Math.random() * enemyMoves.length)];
+            const enemyActor = actor === 'p1' ? 'p2' : 'p1';
+            triggerMove(enemyMove, enemyActor);
+          }, 220);
+        });
+      });
+
+      const countdown = setInterval(() => {
+        if (!roundActive) {
+          clearInterval(countdown);
+          return;
+        }
+
+        roundTime -= 1;
+        timerEl.textContent = roundTime;
+
+        if (roundTime <= 0) {
+          roundActive = false;
+          comboPanel.textContent = 'SÜRE BİTTİ';
+          comboPanel.classList.add('show');
+          clearInterval(countdown);
+        }
+      }, 1000);
+    </script>
+  </body>
+</html>
