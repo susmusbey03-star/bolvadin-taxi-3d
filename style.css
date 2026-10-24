@@ -26,10 +26,13 @@ body {
   color: var(--text);
   font-family: Inter, "Segoe UI", Tahoma, sans-serif;
   overscroll-behavior: none;
+  touch-action: none;
 }
 
 body {
-  touch-action: none;
+  min-height: 100vh;
+  min-height: 100dvh;
+  position: relative;
 }
 
 button {
@@ -40,6 +43,7 @@ button {
   position: relative;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   background: radial-gradient(circle at center, #1e293b 0%, #0f172a 35%, #020617 100%);
 }
@@ -56,9 +60,9 @@ canvas {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(2, 6, 23, 0.55);
+  background: rgba(2, 6, 23, 0.6);
   backdrop-filter: blur(4px);
-  z-index: 30;
+  z-index: 40;
 }
 
 .overlay.hidden {
@@ -73,6 +77,11 @@ canvas {
   padding: 22px 26px;
   text-align: center;
   box-shadow: 0 18px 40px var(--shadow);
+  max-width: min(86vw, 420px);
+}
+
+.rotate-box {
+  padding: 24px 18px;
 }
 
 .spinner {
@@ -97,7 +106,7 @@ canvas {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 14px 16px 0 16px;
+  padding: max(12px, env(safe-area-inset-top)) 16px 0 16px;
   pointer-events: none;
   z-index: 20;
 }
@@ -174,7 +183,7 @@ canvas {
 .start-button {
   position: absolute;
   left: 50%;
-  bottom: 22%;
+  bottom: 18%;
   transform: translateX(-50%);
   z-index: 25;
   background: linear-gradient(135deg, var(--gold), #f59e0b);
@@ -267,9 +276,19 @@ canvas {
   display: none !important;
 }
 
+@media (max-width: 860px) {
+  .hud {
+    padding-top: max(10px, env(safe-area-inset-top));
+  }
+
+  .mission-card {
+    max-width: 38vw;
+  }
+}
+
 @media (max-width: 720px) {
   .hud {
-    padding: 12px 10px 0 10px;
+    padding: 10px 10px 0 10px;
   }
 
   .badge {

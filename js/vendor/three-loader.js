@@ -3,7 +3,7 @@ const FALLBACK_CDN = 'https://unpkg.com/three@0.160.1/build/three.module.js';
 
 export async function loadThree() {
   const candidates = [
-    './vendor/three.module.js',
+    new URL('./three.module.js', import.meta.url).href,
     THREE_CDN,
     FALLBACK_CDN
   ];
@@ -17,7 +17,7 @@ export async function loadThree() {
       if (api && api.Scene && api.WebGLRenderer) {
         return api;
       }
-      throw new Error('Three.js module loaded but did not expose expected API.');
+      throw new Error('Three.js API beklenen yapıda gelmedi.');
     } catch (error) {
       lastError = error;
       console.warn(`Three.js import failed from ${url}:`, error);
