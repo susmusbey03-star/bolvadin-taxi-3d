@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
+    />
+    <meta name="theme-color" content="#0f172a" />
+    <title>Seviyeli Taksi 3D</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="loading-overlay" class="overlay visible">
+        <div class="loader-box">
+          <div class="spinner"></div>
+          <span>Bolvadin taksi yükleniyor...</span>
+        </div>
+      </div>
+
+      <div id="error-overlay" class="overlay hidden" aria-live="polite">
+        <div class="error-box">
+          <h2>Oyun yüklenemedi</h2>
+          <p id="error-text">
+            Three.js veya internet bağlantısı kurulamadı. Lütfen ağ bağlantınızı kontrol edin.
+          </p>
+        </div>
+      </div>
+
+      <div id="hud" class="hud hidden">
+        <div class="hud-left">
+          <div class="badge">
+            <span class="label">Hız</span>
+            <span id="speed-value">0</span>
+            <span class="unit">km/h</span>
+          </div>
+          <div class="badge">
+            <span class="label">Para</span>
+            <span id="money-value">0</span>
+            <span class="unit">₺</span>
+          </div>
+        </div>
+
+        <div class="hud-center">
+          <div class="mission-card">
+            <span class="label">Görev</span>
+            <strong id="mission-name">Yolcu bekleniyor</strong>
+          </div>
+        </div>
+
+        <div class="hud-right">
+          <button id="pause-button" class="ui-button" type="button" aria-label="Oyunu duraklat">
+            ⏸
+          </button>
+          <button id="reset-camera-button" class="ui-button" type="button" aria-label="Kamerayı sıfırla">
+            ↺
+          </button>
+        </div>
+      </div>
+
+      <div id="mini-map" class="mini-map hidden">
+        <div class="mini-map-inner"></div>
+      </div>
+
+      <div id="touch-controls" class="touch-controls hidden">
+        <div class="touch-row">
+          <div class="touch-cluster">
+            <button id="left-button" class="touch-button" type="button" aria-label="Sola dön">
+              ◀
+            </button>
+            <button id="right-button" class="touch-button" type="button" aria-label="Sağa dön">
+              ▶
+            </button>
+          </div>
+
+          <div class="touch-cluster">
+            <button id="brake-button" class="touch-button accent" type="button" aria-label="Fren">
+              ■
+            </button>
+            <button id="accelerate-button" class="touch-button accent" type="button" aria-label="Gaz">
+              ▲
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <button id="start-button" class="start-button" type="button">Oyna</button>
+    </div>
+
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>
