@@ -8,6 +8,9 @@ const startButton = document.getElementById('start-button');
 const pauseButton = document.getElementById('pause-button');
 const resetCameraButton = document.getElementById('reset-camera-button');
 
+let gameInstance = null;
+let initStarted = false;
+
 const showError = (message) => {
   loadingOverlay.classList.add('hidden');
   errorOverlay.classList.remove('hidden');
@@ -29,14 +32,24 @@ const bindUi = (game, input) => {
 };
 
 async function initializeGame() {
+  if (initStarted) return;
+  initStarted = true;
+
   try {
-    const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js');
+    const { loadThree } = await import('./vendor/three-loader.js');
+    const THREE = await loadThree();
+
+    if (!THREE || !THREE.Scene || !THREE.WebGLRenderer) {
+      throw new Error('Three.js kütüphanesi eksik API verdi. Modül yüklenmedi.');
+    }
+
     const { InputController } = await import('./controls.js');
     const { TaxiGame } = await import('./game.js');
 
     const input = new InputController();
     const game = new TaxiGame(THREE, document.getElementById('app'), input);
-    game.init();
+    await game.init();
+    gameInstance = game;
 
     bindUi(game, input);
 
@@ -49,7 +62,8 @@ async function initializeGame() {
     window.__taxiGame = game;
   } catch (error) {
     console.error('Three.js veya oyun başlatılamadı:', error);
-    showError('Three.js yüklenemedi. CDN erişimini kontrol edin veya ağ bağlantısını doğrulayın.');
+    const reason = error && error.message ? error.message : 'Bilinmeyen hata';
+    showError(`Three.js yüklenemedi. Neden: ${reason}. Lütfen CDN erişimini kontrol edin veya ağ bağlantısını doğrulayın.`);
   }
 }
 
@@ -58,8 +72,5 @@ startButton.addEventListener('click', () => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-  if (window.innerWidth <= 768) {
-    // mobil cihazlarda otomatik başlatma yapılır; kullanıcı butonla da başlatabilir.
-  }
   initializeGame();
 });
