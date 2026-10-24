@@ -1,7 +1,6 @@
 const loadingOverlay = document.getElementById('loading-overlay');
 const errorOverlay = document.getElementById('error-overlay');
 const errorText = document.getElementById('error-text');
-const orientationOverlay = document.getElementById('orientation-overlay');
 const hud = document.getElementById('hud');
 const touchControls = document.getElementById('touch-controls');
 const miniMap = document.getElementById('mini-map');
@@ -9,20 +8,12 @@ const startButton = document.getElementById('start-button');
 const pauseButton = document.getElementById('pause-button');
 const resetCameraButton = document.getElementById('reset-camera-button');
 
-let gameInstance = null;
 let initStarted = false;
 
 const showError = (message) => {
   loadingOverlay.classList.add('hidden');
   errorOverlay.classList.remove('hidden');
   errorText.textContent = message;
-};
-
-const refreshOrientationOverlay = () => {
-  const isPortrait = window.innerHeight > window.innerWidth;
-  if (orientationOverlay) {
-    orientationOverlay.classList.toggle('hidden', !isPortrait);
-  }
 };
 
 const bindUi = (game, input) => {
@@ -48,7 +39,7 @@ async function initializeGame() {
     const THREE = await loadThree();
 
     if (!THREE || !THREE.Scene || !THREE.WebGLRenderer) {
-      throw new Error('Three.js kütüphanesi eksik API verdi. Modül yüklenmedi.');
+      throw new Error('Three.js API beklenen yapıda gelmedi.');
     }
 
     const { InputController } = await import('./controls.js');
@@ -57,7 +48,6 @@ async function initializeGame() {
     const input = new InputController();
     const game = new TaxiGame(THREE, document.getElementById('app'), input);
     await game.init();
-    gameInstance = game;
 
     bindUi(game, input);
 
@@ -79,9 +69,6 @@ startButton.addEventListener('click', () => {
   initializeGame();
 });
 
-window.addEventListener('resize', refreshOrientationOverlay);
-window.addEventListener('orientationchange', refreshOrientationOverlay);
 window.addEventListener('DOMContentLoaded', () => {
-  refreshOrientationOverlay();
   initializeGame();
 });
